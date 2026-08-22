@@ -38,11 +38,15 @@ function App() {
     }
   };
 
-  const formatNumber = (number) => {
-    if (!number) return "0";
-    return Number(number).toLocaleString("fr-FR");
-  };
+ const formatNumber = (number) => {
+  const value = Number(number);
 
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  return value.toLocaleString("fr-FR");
+};
   return (
     <div className="dashboard">
 
