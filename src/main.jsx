@@ -31,7 +31,7 @@ function App() {
       if (!data.players || data.players.length === 0) {
         setError("Aucun joueur trouvé.");
       } else {
-        setPlayer(data.players[0]);
+       setPlayer(data.player);
       }
     } catch (err) {
       setError("Impossible de contacter l'API Albion.");
@@ -85,12 +85,12 @@ function App() {
 
               <div className="card">
                 <h2>🏆 Kill Fame</h2>
-                <p>{player.KillFame || 0}</p>
+                <p>{player.LifetimeStatistics?.PvP || 0|| 0}</p>
               </div>
 
               <div className="card">
                 <h2>💀 Death Fame</h2>
-                <p>{player.DeathFame || 0}</p>
+                <p>{player.LifetimeStatistics?.DeathFame || 0 || 0}</p>
               </div>
             </div>
           </section>
