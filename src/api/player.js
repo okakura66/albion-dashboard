@@ -1,87 +1,76 @@
-export default async function handler(req, res) {
-  try {
-    const name = req.query.name;
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const name = url.searchParams.get("name");
 
     if (!name) {
-      return res.status(400).json({
-        error: "Nom du joueur manquant"
-      });
+      return Response.json(
+        { error: "Nom du joueur manquant" },
+        { status: 400 }
+      );
     }
-
-    const url =
-      "https://gameinfo-ams.albiononline.com/api/gameinfo/search?q=" +
-      encodeURIComponent(name);
-
-    const response = await fetch(url);
-
-    const text = await response.text();
-
-    console.log("Albion response:", response.status, text);
-
-    if (!response.ok) {
-      return res.status(502).json({
-        error: "Albion API error",
-        status: response.status,
-        details: text.substring(0, 500)
-      });
-    }
-
-    let data;
 
     try {
-      data = JSON.parse(text);
-    } catch {
-      return res.status(502).json({
-        error: "Albion n'a pas renvoyé du JSON",
-        details: text.substring(0, 500)
+      const albionUrl =
+        "https://gameinfo-ams.albiononline.com/api/gameinfo/search?q=" +
+        encodeURIComponent(name);
+
+      const response = await fetch(albionUrl);
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Albion API inaccessible",
+            status: response.status
+          },
+          { status: 502 }
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.players || data.players.length === 0) {
+        return Response.json(
+          {
+            error: "Joueur introuvable",
+            players: []
+          },
+          { status: 404 }
+        );
+      }
+
+      const playerId = data.players[0].Id;
+
+      const playerResponse = await fetch(
+        "https://gameinfo-ams.albiononline.com/api/gameinfo/players/" +
+          encodeURIComponent(playerId)
+      );
+
+      if (!playerResponse.ok) {
+        return Response.json(
+          {
+            error: "Profil joueur inaccessible",
+            status: playerResponse.status
+          },
+          { status: 502 }
+        );
+      }
+
+      const player = await playerResponse.json();
+
+      return Response.json({
+        player: player,
+        results: data.players
       });
+
+    } catch (error) {
+      return Response.json(
+        {
+          error: "Erreur serveur",
+          details: error.message
+        },
+        { status: 500 }
+      );
     }
-
-    if (!data.players || data.players.length === 0) {
-      return res.status(404).json({
-        error: "Joueur introuvable",
-        players: []
-      });
-    }
-
-    const playerId = data.players[0].Id;
-
-    const playerUrl =
-      "https://gameinfo-ams.albiononline.com/api/gameinfo/players/" +
-      encodeURIComponent(playerId);
-
-    const playerResponse = await fetch(playerUrl);
-
-    const playerText = await playerResponse.text();
-
-    if (!playerResponse.ok) {
-      return res.status(502).json({
-        error: "Impossible de récupérer le profil",
-        status: playerResponse.status,
-        details: playerText.substring(0, 500)
-      });
-    }
-
-    let playerData;
-
-    try {
-      playerData = JSON.parse(playerText);
-    } catch {
-      return res.status(502).json({
-        error: "Le profil Albion n'a pas renvoyé du JSON",
-        details: playerText.substring(0, 500)
-      });
-    }
-
-    return res.status(200).json({
-      player: playerData,
-      results: data.players
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      error: "Erreur serveur",
-      details: error.message
-    });
   }
-}
+};
