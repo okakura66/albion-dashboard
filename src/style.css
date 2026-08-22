@@ -99,3 +99,19 @@ main {
     flex-direction: column;
   }
 }
+.error {
+  background: #3a1717;
+  border: 1px solid #7f2929;
+  color: #ff8a8a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.player-result {
+  margin-top: 20px;
+}
+
+.player-result > h2 {
+  margin-bottom: 20px;
+}
