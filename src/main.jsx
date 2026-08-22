@@ -29,8 +29,11 @@ function App() {
         throw new Error(data.error || "Erreur API");
       }
 
+      if (!data.player) {
+        throw new Error("Joueur introuvable.");
+      }
+
       setPlayer(data.player);
-      console.log("DONNEES ALBION :", data.player);
 
     } catch (err) {
       setError(err.message);
@@ -39,15 +42,18 @@ function App() {
     }
   };
 
- const formatNumber = (number) => {
-  const value = Number(number);
+  const formatNumber = (number) => {
+    const value = Number(number);
 
-  if (!Number.isFinite(value)) {
-    return "0";
-  }
+    if (!Number.isFinite(value)) {
+      return "0";
+    }
 
-  return value.toLocaleString("fr-FR");
-};
+    return value.toLocaleString("fr-FR");
+  };
+
+  const gathering = player?.LifetimeStatistics?.Gathering;
+
   return (
     <div className="dashboard">
 
@@ -57,6 +63,8 @@ function App() {
       </header>
 
       <main>
+
+        {/* RECHERCHE */}
 
         <section className="search-box">
 
@@ -72,11 +80,16 @@ function App() {
             }}
           />
 
-          <button onClick={searchPlayer}>
+          <button
+            onClick={searchPlayer}
+            disabled={loading}
+          >
             {loading ? "Recherche..." : "Rechercher"}
           </button>
 
         </section>
+
+        {/* ERREUR */}
 
         {error && (
           <div className="error">
@@ -84,22 +97,44 @@ function App() {
           </div>
         )}
 
+        {/* JOUEUR */}
+
         {player && (
 
           <section className="player-result">
 
-            <div className="player-header">
-              <h2>👤 {player.Name}</h2>
+            {/* IDENTITÉ */}
 
-              <span>
-                ID : {player.Id}
-              </span>
+            <div className="player-header">
+
+              <div>
+                <h2>👤 {player.Name}</h2>
+
+                <p>
+                  ID : {player.Id}
+                </p>
+              </div>
+
+              <div>
+                <strong>
+                  👥 {player.GuildName || "Sans guilde"}
+                </strong>
+
+                <p>
+                  🤝 {player.AllianceName || "Aucune alliance"}
+                </p>
+              </div>
+
             </div>
+
+
+            {/* STATISTIQUES PRINCIPALES */}
 
             <div className="cards">
 
               <div className="card">
                 <h2>⚔️ Combat Fame</h2>
+
                 <p>
                   {formatNumber(
                     player.LifetimeStatistics?.PvE?.Total
@@ -107,38 +142,195 @@ function App() {
                 </p>
               </div>
 
+
               <div className="card">
-                <h2>🏆 PvP Fame</h2>
+                <h2>🏆 Kill Fame</h2>
+
                 <p>
                   {formatNumber(
-                    player.LifetimeStatistics?.PvP?.Fame
+                    player.KillFame
                   )}
                 </p>
               </div>
+
 
               <div className="card">
                 <h2>💀 Death Fame</h2>
+
                 <p>
                   {formatNumber(
-                    player.LifetimeStatistics?.PvP?.DeathFame
+                    player.DeathFame
                   )}
                 </p>
               </div>
 
+
               <div className="card">
                 <h2>⛏️ Gathering Fame</h2>
+
                 <p>
                   {formatNumber(
-                    player.LifetimeStatistics?.Gathering?.All
+                    gathering?.All?.Total
                   )}
                 </p>
               </div>
 
             </div>
 
-            <div className="info-panel">
 
-              <h2>👥 Informations</h2>
+            {/* GATHERING */}
+
+            <section className="info-panel">
+
+              <h2>⛏️ Gathering</h2>
+
+              <div className="gathering-grid">
+
+                <div>
+                  🌿 Fiber
+                  <strong>
+                    {formatNumber(gathering?.Fiber?.Total)}
+                  </strong>
+                </div>
+
+                <div>
+                  🐗 Hide
+                  <strong>
+                    {formatNumber(gathering?.Hide?.Total)}
+                  </strong>
+                </div>
+
+                <div>
+                  ⛏️ Ore
+                  <strong>
+                    {formatNumber(gathering?.Ore?.Total)}
+                  </strong>
+                </div>
+
+                <div>
+                  🪨 Rock
+                  <strong>
+                    {formatNumber(gathering?.Rock?.Total)}
+                  </strong>
+                </div>
+
+                <div>
+                  🌲 Wood
+                  <strong>
+                    {formatNumber(gathering?.Wood?.Total)}
+                  </strong>
+                </div>
+
+                <div>
+                  🎣 Fishing
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.FishingFame
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  🔨 Crafting
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.Crafting?.Total
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  📊 Total
+                  <strong>
+                    {formatNumber(gathering?.All?.Total)}
+                  </strong>
+                </div>
+
+              </div>
+
+            </section>
+
+
+            {/* PVE */}
+
+            <section className="info-panel">
+
+              <h2>⚔️ Combat / PvE</h2>
+
+              <div className="gathering-grid">
+
+                <div>
+                  🏰 Royal
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.Royal
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  🌍 Outlands
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.Outlands
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  🌫️ Mists
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.Mists
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  🔥 Hellgate
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.Hellgate
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  ☠️ Corrupted Dungeon
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.CorruptedDungeon
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  🌀 Avalon
+                  <strong>
+                    {formatNumber(
+                      player.LifetimeStatistics?.PvE?.Avalon
+                    )}
+                  </strong>
+                </div>
+
+              </div>
+
+            </section>
+
+
+            {/* INFORMATIONS */}
+
+            <section className="info-panel">
+
+              <h2>👥 Informations du joueur</h2>
+
+              <p>
+                <strong>Nom :</strong> {player.Name}
+              </p>
+
+              <p>
+                <strong>ID :</strong> {player.Id}
+              </p>
 
               <p>
                 <strong>Guilde :</strong>{" "}
@@ -151,11 +343,21 @@ function App() {
               </p>
 
               <p>
-                <strong>Nom :</strong>{" "}
-                {player.Name}
+                <strong>Kill Fame :</strong>{" "}
+                {formatNumber(player.KillFame)}
               </p>
 
-            </div>
+              <p>
+                <strong>Death Fame :</strong>{" "}
+                {formatNumber(player.DeathFame)}
+              </p>
+
+              <p>
+                <strong>Ratio Fame :</strong>{" "}
+                {player.FameRatio || 0}
+              </p>
+
+            </section>
 
           </section>
 
@@ -167,7 +369,9 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(
+  document.getElementById("root")
+).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
