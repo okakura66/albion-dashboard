@@ -26,12 +26,7 @@ function App() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.details || data.error || "Erreur API");
-      }
-
-      if (!data.player) {
-        setError("Joueur introuvable.");
-        return;
+        throw new Error(data.error || "Erreur API");
       }
 
       setPlayer(data.player);
@@ -43,18 +38,26 @@ function App() {
     }
   };
 
+  const formatNumber = (number) => {
+    if (!number) return "0";
+    return Number(number).toLocaleString("fr-FR");
+  };
+
   return (
     <div className="dashboard">
+
       <header>
         <h1>⚔️ Albion Analytics</h1>
-        <p>Analyse des joueurs Albion Online</p>
+        <p>Analyse avancée des joueurs Albion Online</p>
       </header>
 
       <main>
+
         <section className="search-box">
+
           <input
             type="text"
-            placeholder="Entrez un nom de joueur..."
+            placeholder="Entrez le nom d'un joueur..."
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             onKeyDown={(e) => {
@@ -64,49 +67,97 @@ function App() {
             }}
           />
 
-          <button onClick={searchPlayer} disabled={loading}>
+          <button onClick={searchPlayer}>
             {loading ? "Recherche..." : "Rechercher"}
           </button>
+
         </section>
 
-        {error && <div className="error">{error}</div>}
+        {error && (
+          <div className="error">
+            {error}
+          </div>
+        )}
 
         {player && (
+
           <section className="player-result">
 
-            <h2>👤 {player.Name}</h2>
+            <div className="player-header">
+              <h2>👤 {player.Name}</h2>
+
+              <span>
+                ID : {player.Id}
+              </span>
+            </div>
 
             <div className="cards">
 
               <div className="card">
-                <h2>🆔 ID</h2>
-                <p>{player.Id}</p>
-              </div>
-
-              <div className="card">
-                <h2>👤 Nom</h2>
-                <p>{player.Name}</p>
+                <h2>⚔️ Combat Fame</h2>
+                <p>
+                  {formatNumber(
+                    player.LifetimeStatistics?.PvE?.Total
+                  )}
+                </p>
               </div>
 
               <div className="card">
                 <h2>🏆 PvP Fame</h2>
                 <p>
-                  {player.LifetimeStatistics?.PvP?.Fame || 0}
+                  {formatNumber(
+                    player.LifetimeStatistics?.PvP?.Fame
+                  )}
                 </p>
               </div>
 
               <div className="card">
                 <h2>💀 Death Fame</h2>
                 <p>
-                  {player.LifetimeStatistics?.PvP?.DeathFame || 0}
+                  {formatNumber(
+                    player.LifetimeStatistics?.PvP?.DeathFame
+                  )}
+                </p>
+              </div>
+
+              <div className="card">
+                <h2>⛏️ Gathering Fame</h2>
+                <p>
+                  {formatNumber(
+                    player.LifetimeStatistics?.Gathering?.All
+                  )}
                 </p>
               </div>
 
             </div>
 
+            <div className="info-panel">
+
+              <h2>👥 Informations</h2>
+
+              <p>
+                <strong>Guilde :</strong>{" "}
+                {player.GuildName || "Sans guilde"}
+              </p>
+
+              <p>
+                <strong>Alliance :</strong>{" "}
+                {player.AllianceName || "Aucune"}
+              </p>
+
+              <p>
+                <strong>Nom :</strong>{" "}
+                {player.Name}
+              </p>
+
+            </div>
+
           </section>
+
         )}
+
       </main>
+
     </div>
   );
 }
