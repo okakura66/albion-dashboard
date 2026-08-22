@@ -30,6 +30,7 @@ function App() {
       }
 
       setPlayer(data.player);
+      console.log("DONNEES ALBION :", data.player);
 
     } catch (err) {
       setError(err.message);
