@@ -8,26 +8,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(
+    const searchResponse = await fetch(
       `https://gameinfo-ams.albiononline.com/api/gameinfo/search?q=${encodeURIComponent(name)}`
     );
 
-    if (!response.ok) {
+    if (!searchResponse.ok) {
       return res.status(502).json({
-        error: "Albion API inaccessible",
-        status: response.status
+        error: "Albion API inaccessible"
       });
     }
 
-    const data = await response.json();
+    const searchData = await searchResponse.json();
 
-    if (!data.players || data.players.length === 0) {
+    if (!searchData.players || searchData.players.length === 0) {
       return res.status(404).json({
         error: "Joueur introuvable"
       });
     }
 
-    const playerId = data.players[0].Id;
+    const playerId = searchData.players[0].Id;
 
     const playerResponse = await fetch(
       `https://gameinfo-ams.albiononline.com/api/gameinfo/players/${playerId}`
@@ -42,8 +41,8 @@ export default async function handler(req, res) {
     const player = await playerResponse.json();
 
     return res.status(200).json({
-      player,
-      results: data.players
+      player: player,
+      searchResults: searchData.players
     });
 
   } catch (error) {
