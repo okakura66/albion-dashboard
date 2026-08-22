@@ -20,11 +20,8 @@ function App() {
 
     try {
       const response = await fetch(
-        `https://gameinfo.albiononline.com/api/gameinfo/search?q=${encodeURIComponent(
-          playerName
-        )}`
-      );
-
+  `/api/player?name=${encodeURIComponent(playerName)}`
+);
       if (!response.ok) {
         throw new Error("Erreur API");
       }
