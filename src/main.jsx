@@ -20,24 +20,27 @@ function App() {
 
     try {
       const response = await fetch(
-  `/api/player?name=${encodeURIComponent(playerName)}`
-);
-      if (!response.ok) {
-        throw new Error("Erreur API");
-      }
+        `/api/player?name=${encodeURIComponent(playerName)}`
+      );
 
       const data = await response.json();
 
-      if (!data.players || data.players.length === 0) {
-        setError("Aucun joueur trouvé.");
-      } else {
-       setPlayer(data.player);
+      if (!response.ok) {
+        throw new Error(data.details || data.error || "Erreur API");
       }
-    } catch (err) {
-      setError("Impossible de contacter l'API Albion.");
-    }
 
-    setLoading(false);
+      if (!data.player) {
+        setError("Joueur introuvable.");
+        return;
+      }
+
+      setPlayer(data.player);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,7 +54,7 @@ function App() {
         <section className="search-box">
           <input
             type="text"
-            placeholder="Entrez le nom d'un joueur..."
+            placeholder="Entrez un nom de joueur..."
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             onKeyDown={(e) => {
@@ -61,7 +64,7 @@ function App() {
             }}
           />
 
-          <button onClick={searchPlayer}>
+          <button onClick={searchPlayer} disabled={loading}>
             {loading ? "Recherche..." : "Rechercher"}
           </button>
         </section>
@@ -70,9 +73,11 @@ function App() {
 
         {player && (
           <section className="player-result">
+
             <h2>👤 {player.Name}</h2>
 
             <div className="cards">
+
               <div className="card">
                 <h2>🆔 ID</h2>
                 <p>{player.Id}</p>
@@ -84,15 +89,21 @@ function App() {
               </div>
 
               <div className="card">
-                <h2>🏆 Kill Fame</h2>
-                <p>{player.LifetimeStatistics?.PvP || 0|| 0}</p>
+                <h2>🏆 PvP Fame</h2>
+                <p>
+                  {player.LifetimeStatistics?.PvP?.Fame || 0}
+                </p>
               </div>
 
               <div className="card">
                 <h2>💀 Death Fame</h2>
-                <p>{player.LifetimeStatistics?.DeathFame || 0 || 0}</p>
+                <p>
+                  {player.LifetimeStatistics?.PvP?.DeathFame || 0}
+                </p>
               </div>
+
             </div>
+
           </section>
         )}
       </main>
